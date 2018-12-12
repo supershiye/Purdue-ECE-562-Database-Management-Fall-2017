@@ -1,0 +1,71 @@
+CREATE OR REPLACE FUNCTION FUN_most_popular (mon varchar2)
+return sys_refcursor is book_id1 number;
+mon_num number;
+year2 number;
+book_id_list sys_refcursor;
+cursor year_cur is
+select distinct extract(year from ix.issue_date) from issue ix;
+year1   number;--year_cur%ROWTYPE;
+begin
+case 
+when upper(mon) = 'JAN' then mon_num := 1;
+when upper(mon) = 'FEB' then mon_num := 2;
+when upper(mon) = 'MAR' then mon_num := 3;
+when upper(mon) = 'APR' then mon_num := 4;
+when upper(mon) = 'MAY' then mon_num := 5;
+when upper(mon) = 'JUN' then mon_num := 6;
+when upper(mon) = 'JUL' then mon_num := 7;
+when upper(mon) = 'AUG' then mon_num := 8;
+when upper(mon) = 'SEP' then mon_num := 9;
+when upper(mon) = 'OCT' then mon_num := 10;
+when upper(mon) = 'NOV' then mon_num := 11;
+when upper(mon) = 'DEC' then mon_num := 12;
+else raise_application_error(-20004,'The input requires to be a month as "Jan"');
+end case;
+dbms_output.put_line('Year    Month    Book_id');
+-- return mon_num;]
+open year_cur;
+
+loop fetch year_cur into year1;
+exit when year_cur%notfound;
+--year2 :=year1;
+open book_id_list for 
+
+select ix.book_id from issue ix where extract(month from ix.issue_date) = 10
+and extract(year from ix.issue_date) =2017
+having count(book_id) = (select max(count(iy.book_id)) from  issue iy where  extract(month from iy.issue_date) = 10
+and extract(year from iy.issue_date) =2017
+group by iy.book_id)
+group by ix.book_id;
+
+--select ix.book_id from issue ix where extract(month from ix.issue_date) = mon_num
+--and extract(year from ix.issue_date) = year1
+--having count(book_id) = (select max(count(iy.book_id)) from  issue iy where  extract(month from iy.issue_date) = mon_num
+--and extract(year from iy.issue_date) = year1
+--group by iy.book_id)
+--group by ix.book_id;
+-- dbms_output.put_line(year1||'    '||Mon_num||'    ');
+dbms_output.put_line(year1||'    '||Mon_num||'        '||book_id_list%ROWCOUNT);
+end loop;
+return book_id_list;
+end;
+/
+
+
+
+DECLARE
+    x   sys_refcursor;
+BEGIN
+    x := fun_most_popular('Oct');  -- This returns an open cursor
+   -- dbms_output.put_line(x);
+END;
+/
+select distinct extract(year from ix.issue_date) from issue ix;
+
+
+select ix.book_id from issue ix where extract(month from ix.issue_date) = 10
+and extract(year from ix.issue_date) =2017
+having count(book_id) = (select max(count(iy.book_id)) from  issue iy where  extract(month from iy.issue_date) = 10
+and extract(year from iy.issue_date) =2017
+group by iy.book_id)
+group by ix.book_id;
